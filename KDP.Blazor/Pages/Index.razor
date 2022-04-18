@@ -1,0 +1,76 @@
+﻿@page "/"
+
+<h1>Hallo, Sonnenschein!</h1>
+
+<button class="btn btn-primary" @onclick="Process">Diesen Knopf hier</button>
+<input value="@stringValue" @oninput="(EventArgs) => { SetValue(EventArgs.Value.ToString()); }" />
+<p></p>
+
+@if (DataList != null && DataList.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Wort</th>
+                <th>Anzahl</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var data in DataList)
+            {
+                <tr>
+                    <td>@data.Word</td>
+                    <td>@data.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p><em>Mahlzeit Frau Sonnenschein...</em></p>
+}
+
+
+@code {
+    string stringValue = "";
+    private void SetValue(string Value)
+    {
+        stringValue = Value;
+    }
+
+    Dictionary<string, int> dictOfWords = new Dictionary<string, int>();
+    public List<DataObject> DataList = new List<DataObject>();
+
+    private void Process()
+    {
+        var text = stringValue;
+        var regex = new System.Text.RegularExpressions.Regex(@"([A-Z])\w+");
+        var words = System.Text.RegularExpressions.Regex.Matches(text, @"([A-Z])\w+").Cast<System.Text.RegularExpressions.Match>().Select(m => m.Value);
+
+        foreach (var word in words)
+        {
+            if (!dictOfWords.ContainsKey(word))
+            {
+                dictOfWords.TryAdd(word, 1);
+            }
+            else
+            {
+                dictOfWords[word] += 1;
+            }
+        }
+
+        if (dictOfWords.Count != 0)
+        {
+            foreach (var item in dictOfWords.OrderByDescending(x => x.Value))
+            {
+                DataList.Add(new DataObject()
+                {
+                    Word = item.Key,
+                    Count = item.Value
+                });
+            }
+        }
+    }
+}
+
